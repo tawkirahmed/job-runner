@@ -1,6 +1,5 @@
 package repositories
 
-import commons.TestUtils
 import org.scalatest.FlatSpec
 import repositories.dtos.dtos.Job
 
@@ -10,7 +9,7 @@ import scala.concurrent.duration.Duration
 /**
   * Created by Tawkir Ahmed Fakir on 7/22/2017.
   */
-class JobsRepositorySpec extends FlatSpec with TestUtils with DbConfiguration {
+class JobsRepositorySpec extends FlatSpec with DbConfiguration {
   val repo = new JobsRepository(config)
   repo.init()
 
