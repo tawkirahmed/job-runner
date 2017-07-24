@@ -20,18 +20,17 @@ class JobsRepository @Inject()(val config: DatabaseConfig[JdbcProfile])
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def find(id: Int) = db.run((for (job <- jobs if job.id == id) yield job).result.headOption)
+  def find(id: Int) = db.run((for (job <- jobs if job.id === id) yield job).result.headOption)
 
   def getExecutables: Seq[Executable] = {
     ???
   }
 
-  def getJobDependencies: Future[Map[Int, Seq[Int]]] = {
+  def getJobDependencies: Future[Seq[(Int, Int)]] = {
     db.run((for (edge <- jobDependencies) yield edge.jobId -> edge.dependantJobId).result)
-      .map(_.groupBy(_._1).map(x => x._1 -> x._2.map(_._2)))
   }
 
-  def getStartingJobs(): Future[Seq[Job]] = {
+  def getStartingJobs: Future[Seq[Job]] = {
     db.run {
       (for {
         (job, dependency) <- jobs joinLeft jobDependencies on (_.id === _.dependantJobId)

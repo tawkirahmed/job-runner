@@ -16,11 +16,10 @@ class JobSchedulerService @Inject()(cfg: Config, jobsRepo: JobsRepository, dfs: 
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-
-  def getJobsRunOrder(executionStartTime: Long): Future[scala.Seq[Int]] = async {
+  def getJobsRunOrder(executionStartTime: Long): Future[Seq[Seq[Int]]] = async {
     val startingJobs = await(jobsRepo.getStartingJobs)
-    val edgeMap = await(jobsRepo.getJobDependencies)
+    val edgeList = await(jobsRepo.getJobDependencies).toList
 
-    dfs.getTopSort(startingJobs.map(_.id.get), edgeMap)
+    dfs.getTopSortWithIndependentNodes(startingJobs.map(_.id.get), edgeList)
   }
 }
