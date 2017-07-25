@@ -11,10 +11,10 @@ import scala.concurrent.duration.Duration
   */
 class JobsRepositorySpec extends FlatSpec with DbConfiguration {
   val repo = new JobsRepository(config)
-  repo.init()
+  repo.initAllTables()
 
   "insert" should "add new data successfully" in {
-    val job = Await.result(repo.insert(Job(id = None, name = "First Job", status = 1)), Duration.Inf)
+    val job = Await.result(repo.insertJob(Job(id = None, name = "First Job", status = 1)), Duration.Inf)
     assert(job.name == "First Job")
   }
 }

@@ -9,7 +9,7 @@ object dtos {
 
   // TODO: make staus an enum. For now the mapping is as follows
   // 1 -> idle, 2 -> running, 3 -> completed, 4 -> error
-  case class Job(id: Option[Int], name: String, status: Int,
+  case class Job(id: Option[Int], name: String, status: Int = 1,
                  lastRunTime: Long = 0, runTime: Option[Long] = None,
                  minimumDataOutputSize: Option[Long] = None, // in kilobytes
                  maximumDataOutputSize: Option[Long] = None, // in kilobytes

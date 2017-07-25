@@ -19,6 +19,8 @@ class JobSchedulerService @Inject()(cfg: Config, jobsRepo: JobsRepository, dfs: 
 
   def getJobsRunOrder(executionStartTime: ZonedDateTime): Future[Seq[Seq[Int]]] = async {
     val startingJobs = await(jobsRepo.getStartingJobs)
+
+    println("Starting jobs number " + startingJobs.size)
     val edgeList = await(jobsRepo.getJobDependencies).toList
 
     dfs.getTopSortWithIndependentNodes(startingJobs.map(_.id.get), edgeList)

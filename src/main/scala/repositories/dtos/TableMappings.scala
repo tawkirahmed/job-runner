@@ -42,7 +42,7 @@ object TableMappings {
       def lastDuration = column[Option[Long]]("LAST_DURATION")
 
       // Indexes
-      def nameIndex = index("JOB_NAME_IDX", name, true)
+      def nameIndex = index("JOB_NAME_IDX", name, false)
 
       // Select
       def * = (id.?, name, status, lastRunTime, runTime, minimumDataOutputSize,

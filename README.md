@@ -30,3 +30,18 @@ Following assumptions has been taken while developing the application:
   
   10. User will be able to manage jobs via console.
       
+      
+###### Test Cases:
+These are the cases which are available in the AppSpec file. Here the cases are noted down in more readable format. The cases are cumulative.
+That is test case 3 will validate both test case 1 and 2. 
+
+  1. One job with one script with no scheduled time.
+   
+  2. Two job with one script each with no scheduled time. The seconds job depends on the first job. 
+  
+  3. Add one more job which depends on NONE. But now make one job from test case 2 fail. This new job should not depends on the failure of previous job as it is
+  not dependant on it.
+  
+  4. After correcting the job from test case 2, the failing job should be re run again.
+  
+  5. 

@@ -3,7 +3,7 @@ package repositories
 import javax.inject.Inject
 
 import repositories.dtos.TableMappings._
-import repositories.dtos.dtos.{Executable, Job, JobExecution, JobWatcher}
+import repositories.dtos.dtos._
 import slick.basic.DatabaseConfig
 import slick.dbio.DBIOAction
 import slick.jdbc.JdbcProfile
@@ -46,7 +46,7 @@ class JobsRepository @Inject()(val config: DatabaseConfig[JdbcProfile])
       for {
         job <- jobs if job.id.inSetBind(jobIds)
         executable <- executables if executable.jobId === job.id
-        watcher <- jobWatchers if watcher.jobId === job.id
+        watcher <- jobWatchers if watcher.jobId === job.id //TODO: Make it left join
       } yield (job, executable, watcher)
 
     db.run {
@@ -57,16 +57,38 @@ class JobsRepository @Inject()(val config: DatabaseConfig[JdbcProfile])
   /*
   CRUD Operation API
    */
-  def insert(job: Job): Future[Job] = db
+  def insertJob(job: Job): Future[Job] = db
     .run(jobs returning jobs.map(_.id) += job)
     .map(id => job.copy(id = Some(id)))
 
+  def insertExecutable(ex: Executable): Future[Executable] = db
+    .run(executables returning executables.map(_.id) += ex)
+    .map(id => ex.copy(id = Some(id)))
+
+  def insertWatcher(watcher: JobWatcher): Future[JobWatcher] = db
+    .run(jobWatchers returning jobWatchers.map(_.id) += watcher)
+    .map(id => watcher.copy(id = Some(id)))
+
+  def insertDependency(dependency: JobDependency): Future[JobDependency] = db
+    .run(jobDependencies returning jobDependencies.map(_.id) += dependency)
+    .map(id => dependency.copy(id = Some(id)))
+
   def update(job: Job): Future[Int] = db.run(jobs.filter(_.id === job.id).update(job))
+
+  def updateExecutable(ex: Executable): Future[Int] = db.run(executables.filter(_.id === ex.id).update(ex))
 
   def insertJobExecution(jobExecution: JobExecution): Future[JobExecution] = db
     .run(jobExecutions returning jobExecutions += jobExecution)
 
-  def init(): Future[Unit] = db.run(DBIOAction.seq(jobs.schema.create))
+  def initAllTables(): Future[Unit] = {
+    // TODO: https://stackoverflow.com/questions/33929709/scala-slick-how-to-create-schema-only-if-it-does-not-exist
+
+    db.run(DBIOAction.seq(jobs.schema.create))
+    db.run(DBIOAction.seq(executables.schema.create))
+    db.run(DBIOAction.seq(jobDependencies.schema.create))
+    db.run(DBIOAction.seq(jobExecutions.schema.create))
+    db.run(DBIOAction.seq(jobWatchers.schema.create))
+  }
 
   def drop(): Future[Unit] = db.run(DBIOAction.seq(jobs.schema.drop))
 }

@@ -27,6 +27,7 @@ class JobsService @Inject()(
 
   // TODO: For now jobs will be retrieved based on scheduled time when the run method gets invoked.
   def run = async {
+    println("------------------------------------------------")
     val currentTime = CommonUtils.nowUTC(clock)
 
     val scheduledJobs = await(jobScheduler.getJobsRunOrder(currentTime))
@@ -36,6 +37,7 @@ class JobsService @Inject()(
     while (!jobQueue.isEmpty) {
       val currentJobBatch = jobQueue.dequeue()
       try {
+        println("Running batch with following jobs: " + currentJobBatch.map(_.job.name).mkString(", "))
         runJobBatch(currentJobBatch)
       }
       catch {
@@ -44,6 +46,23 @@ class JobsService @Inject()(
         }
       }
     }
+  }
+
+  private def runJob(job: JobDetails, jobExecutionId: String): JobInfo = {
+    val startTime = System.currentTimeMillis()
+    val outputSize = job.executables.foldLeft(0l)((outputSize, executable) => {
+      try {
+        outputSize + scriptingService.run(executable.script)
+      } catch {
+        case exception: Exception => {
+          jobsRepo.insertJobExecution(JobExecution(jobExecutionId, job.job.id.get, executable.id.get, 4))
+          throw exception
+        }
+      }
+    })
+
+    val endTime = System.currentTimeMillis()
+    JobInfo(outputSize, (endTime - startTime))
   }
 
   private def updateJobStatus(job: Job, status: Int): Future[Int] = {
@@ -75,23 +94,6 @@ class JobsService @Inject()(
     })
   }
 
-  def runJob(job: JobDetails, jobExecutionId: String): JobInfo = {
-    val startTime = System.currentTimeMillis()
-    val outputSize = job.executables.foldLeft(0l)((outputSize, executable) => {
-      try {
-        outputSize + scriptingService.run(executable.script)
-      } catch {
-        case exception: Exception => {
-          jobsRepo.insertJobExecution(JobExecution(jobExecutionId, job.job.id.get, executable.id.get, 4))
-          throw exception
-        }
-      }
-    })
-
-    val endTime = System.currentTimeMillis()
-    JobInfo(outputSize, (endTime - startTime))
-  }
-
   private def getJobQueue(scheduledJobs: Seq[Seq[JobDetails]]): mutable.Queue[Seq[JobDetails]] = {
     val queue = new mutable.Queue[Seq[JobDetails]]()
     scheduledJobs.foreach(jobs => queue.enqueue(jobs))
@@ -117,6 +119,6 @@ class JobsService @Inject()(
       })
   }
 
-  protected case class JobInfo(outputSize: Long, duration: Long)
+  private case class JobInfo(outputSize: Long, duration: Long)
 
 }
