@@ -5,12 +5,12 @@ Details to be added
 ###### Assumptions
 Following assumptions has been taken while developing the application:
 
-  1. A job will have one shell script attached to it.  
+  1. A job will have one or more shell script attached to it. So job to script will be a one to many mapping. For now I am not going to make it as a many many to map due to time constraint.  
   
   2. Since the application does not have any knowledge on the internal processing of the scripts it run,
    the application will look for the stdout and stderr of the script to understand whether it finished with success or not.
    
-  3. A job will be run at a fixed time in a day. So everytime the application has been run, it will look for jobs which has not been run for today and then run those.
+  3. A job will be run at a fixed time in a day. So every time the application has been run, it will look for jobs which has not been run for today and then run those.
   
   4. A job is eligible to run if following two conditions are true:
 
@@ -26,7 +26,7 @@ Following assumptions has been taken while developing the application:
    
   8. A job will have a threshold value for data generated (lower and upper bound) and will notify if any of them are crossed.
   
-  9. A job will also have a average time limit to be input from user. Similar notification is expected if it crossed certain threshold.
+  9. A job will also have a expected duration property to be input from user. Similar notification is expected if it crossed certain threshold.
   
   10. User will be able to manage jobs via console.
       

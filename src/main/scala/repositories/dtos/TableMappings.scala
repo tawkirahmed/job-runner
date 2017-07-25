@@ -1,12 +1,14 @@
 package repositories.dtos
 
 import repositories.Db
-import repositories.dtos.dtos.{Executable, Job, JobDependency}
+import repositories.dtos.dtos._
 
 /**
   * Created by Tawkir Ahmed Fakir on 7/22/2017.
   */
 object TableMappings {
+
+  //TODO: Need to correct the foreign key mappings
 
   trait JobsTable {
     this: Db =>
@@ -16,22 +18,36 @@ object TableMappings {
     val jobs = TableQuery[Jobs]
 
     class Jobs(tag: Tag) extends Table[Job](tag, "jobs") {
-      // Indexes
-      def nameIndex = index("JOB_NAME_IDX", name, true)
-
-      def name = column[String]("JOB_NAME", O.Length(512))
-
-      // Select
-      def * = (id.?, name, status, lastRunTime, runTime) <> (Job.tupled, Job.unapply)
-
       // Columns
       def id = column[Int]("JOB_ID", O.PrimaryKey, O.AutoInc)
+
+      def name = column[String]("JOB_NAME", O.Length(512))
 
       def status = column[Int]("STATUS")
 
       def lastRunTime = column[Long]("LAST_RUN_TIME")
 
       def runTime = column[Option[Long]]("RUN_TIME")
+
+      def minimumDataOutputSize = column[Option[Long]]("MINIMUM_DATA_OUTPUT_SIZE")
+
+      def maximumDataOutputSize = column[Option[Long]]("MAXIMUM_DATA_OUTPUT_SIZE")
+
+      def expectedDuration = column[Option[Long]]("EXPECTED_DURATION")
+
+      def lastExecutionId = column[Option[String]]("LAST_EXECUTION_ID")
+
+      def lastDataOutputSize = column[Option[Long]]("LAST_DATA_OUTPUT_SIZE")
+
+      def lastDuration = column[Option[Long]]("LAST_DURATION")
+
+      // Indexes
+      def nameIndex = index("JOB_NAME_IDX", name, true)
+
+      // Select
+      def * = (id.?, name, status, lastRunTime, runTime, minimumDataOutputSize,
+        maximumDataOutputSize, expectedDuration,
+        lastExecutionId, lastDataOutputSize, lastDuration) <> (Job.tupled, Job.unapply)
     }
 
   }
@@ -44,16 +60,16 @@ object TableMappings {
     val executables = TableQuery[Executables]
 
     class Executables(tag: Tag) extends Table[Executable](tag, "EXECUTABLES") {
-      def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
-
-      // ForeignKey
-      def jobId = column[Int]("JOB_ID")
-
-      def * = (id.?, script, jobId) <> (Executable.tupled, Executable.unapply)
-
       def id = column[Int]("EXECUTABLE_ID", O.PrimaryKey, O.AutoInc)
 
+      def jobId = column[Int]("JOB_ID")
+
       def script = column[String]("JOB_NAME", O.Length(Int.MaxValue))
+
+      // ForeignKey
+      def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
+
+      def * = (id.?, script, jobId) <> (Executable.tupled, Executable.unapply)
     }
 
   }
@@ -66,20 +82,74 @@ object TableMappings {
     val jobDependencies = TableQuery[JobDependencies]
 
     class JobDependencies(tag: Tag) extends Table[JobDependency](tag, "JOB_DEPENDENCIES") {
-      // TODO: Check foregin key action constraint
-      def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
+      def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)
 
       def jobId = column[Int]("JOB_ID")
+
+      def dependantJobId = column[Int]("DEPENDANT_JOB_ID")
+
+      // TODO: Check foregin key action constraint
+      // ForeignKey
+      def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
 
       def dJobFk = foreignKey("D_JOB_FK", dependantJobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
 
       def * = (id.?, jobId, dependantJobId) <> (JobDependency.tupled, JobDependency.unapply)
-
-      // ForeignKey
-      def dependantJobId = column[Int]("DEPENDANT_JOB_ID")
-
-      def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)
     }
+
   }
+
+  trait JobExecutionsTable extends JobsTable with ExecutablesTable {
+    this: Db =>
+
+    import config.profile.api._
+
+    val jobExecutions = TableQuery[JobExecutions]
+
+    class JobExecutions(tag: Tag) extends Table[JobExecution](tag, "JOB_EXECUTIONS") {
+      def id = column[String]("ID")
+
+      def jobId = column[Int]("JOB_ID")
+
+      def executableId = column[Int]("EXECUTABLE_ID")
+
+      def status = column[Int]("STATUS")
+
+      // TODO: Check foregin key action constraint
+      // ForeignKey
+      def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
+
+      def executableFk = foreignKey("EXECUTABLE_FK", executableId, executables)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
+
+      def * = (id, jobId, executableId, status) <> (JobExecution.tupled, JobExecution.unapply)
+    }
+
+  }
+
+  trait JobWatchersTable extends JobsTable with ExecutablesTable {
+    this: Db =>
+
+    import config.profile.api._
+
+    val jobWatchers = TableQuery[JobWatchers]
+
+    class JobWatchers(tag: Tag) extends Table[JobWatcher](tag, "JOB_WATCHERS") {
+      def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)
+
+      def jobId = column[Int]("JOB_ID")
+
+      def name = column[String]("NAME", O.Length(512))
+
+      def email = column[String]("EMAIL", O.Length(512))
+
+      // TODO: Check foregin key action constraint
+      // ForeignKey
+      def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
+
+      def * = (id.?, jobId, name, email) <> (JobWatcher.tupled, JobWatcher.unapply)
+    }
+
+  }
+
 }
 

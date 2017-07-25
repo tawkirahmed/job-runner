@@ -1,5 +1,6 @@
 package services
 
+import java.time.ZonedDateTime
 import javax.inject.Inject
 
 import com.typesafe.config.Config
@@ -16,10 +17,22 @@ class JobSchedulerService @Inject()(cfg: Config, jobsRepo: JobsRepository, dfs: 
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def getJobsRunOrder(executionStartTime: Long): Future[Seq[Seq[Int]]] = async {
+  def getJobsRunOrder(executionStartTime: ZonedDateTime): Future[Seq[Seq[Int]]] = async {
     val startingJobs = await(jobsRepo.getStartingJobs)
     val edgeList = await(jobsRepo.getJobDependencies).toList
 
-    dfs.getTopSortWithIndependentNodes(startingJobs.map(_.id.get), edgeList)
+    val scheduledJobs = dfs.getTopSortWithIndependentNodes(startingJobs.map(_.id.get), edgeList)
+    getscheduledJobsDetails(scheduledJobs)
+  }
+
+  private def getscheduledJobsDetails(scheduledJobs: Seq[scala.Seq[Int]]) = {
+
+    val jobIds = scheduledJobs.flatten
+    getJobDetails(jobIds)
+    ???
+  }
+
+  private def getJobDetails(jobIds: Seq[Int]) = {
+
   }
 }
