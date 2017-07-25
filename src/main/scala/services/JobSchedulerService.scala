@@ -21,18 +21,6 @@ class JobSchedulerService @Inject()(cfg: Config, jobsRepo: JobsRepository, dfs: 
     val startingJobs = await(jobsRepo.getStartingJobs)
     val edgeList = await(jobsRepo.getJobDependencies).toList
 
-    val scheduledJobs = dfs.getTopSortWithIndependentNodes(startingJobs.map(_.id.get), edgeList)
-    getscheduledJobsDetails(scheduledJobs)
-  }
-
-  private def getscheduledJobsDetails(scheduledJobs: Seq[scala.Seq[Int]]) = {
-
-    val jobIds = scheduledJobs.flatten
-    getJobDetails(jobIds)
-    ???
-  }
-
-  private def getJobDetails(jobIds: Seq[Int]) = {
-
+    dfs.getTopSortWithIndependentNodes(startingJobs.map(_.id.get), edgeList)
   }
 }

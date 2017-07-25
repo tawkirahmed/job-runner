@@ -5,6 +5,7 @@ package repositories.dtos
   */
 object dtos {
 
+  case class JobDetails(job: Job, executables: Seq[Executable], watchers: Seq[JobWatcher])
   // TODO: make staus an enum. For now the mapping is as follows
   // 1 -> idle, 2 -> running, 3 -> completed, 4 -> error
   case class Job(id: Option[Int], name: String, status: Int,
