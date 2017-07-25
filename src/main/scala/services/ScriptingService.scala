@@ -8,7 +8,7 @@ import scala.sys.process.{ProcessLogger, _}
   * Created by Tawkir Ahmed Fakir on 7/25/2017.
   */
 class ScriptingService @Inject()() {
-  val charSet = "UTF-8"
+  private val charSet = "UTF-8"
 
   def run(cmd: String): Long = {
 
@@ -47,6 +47,6 @@ class ScriptingService @Inject()() {
     CommandStatus(status, stdout, stderr)
   }
 
-  case class CommandStatus(status: Int, stdout: StringBuilder, stderr: StringBuilder)
+  private case class CommandStatus(status: Int, stdout: StringBuilder, stderr: StringBuilder)
 
 }

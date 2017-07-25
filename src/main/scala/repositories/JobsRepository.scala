@@ -2,8 +2,8 @@ package repositories
 
 import javax.inject.Inject
 
-import repositories.dtos.TableMappings.{ExecutablesTable, JobDependenciesTable, JobWatchersTable, JobsTable}
-import repositories.dtos.dtos.{Executable, Job, JobWatcher}
+import repositories.dtos.TableMappings._
+import repositories.dtos.dtos.{Executable, Job, JobExecution, JobWatcher}
 import slick.basic.DatabaseConfig
 import slick.dbio.DBIOAction
 import slick.jdbc.JdbcProfile
@@ -14,7 +14,8 @@ import scala.concurrent.Future
   * Created by Tawkir Ahmed Fakir on 7/22/2017.
   */
 class JobsRepository @Inject()(val config: DatabaseConfig[JdbcProfile])
-  extends Db with JobsTable with JobDependenciesTable with ExecutablesTable with JobWatchersTable {
+  extends Db with JobsTable with JobDependenciesTable
+    with ExecutablesTable with JobWatchersTable with JobExecutionsTable {
 
   import config.profile.api._
 
@@ -27,6 +28,7 @@ class JobsRepository @Inject()(val config: DatabaseConfig[JdbcProfile])
   }
 
   def getJobDependencies: Future[Seq[(Int, Int)]] = {
+    // TODO: Need to add completed depency
     db.run((for (edge <- jobDependencies) yield edge.jobId -> edge.dependantJobId).result)
   }
 
@@ -58,6 +60,11 @@ class JobsRepository @Inject()(val config: DatabaseConfig[JdbcProfile])
   def insert(job: Job): Future[Job] = db
     .run(jobs returning jobs.map(_.id) += job)
     .map(id => job.copy(id = Some(id)))
+
+  def update(job: Job): Future[Int] = db.run(jobs.filter(_.id === job.id).update(job))
+
+  def insertJobExecution(jobExecution: JobExecution): Future[JobExecution] = db
+    .run(jobExecutions returning jobExecutions += jobExecution)
 
   def init(): Future[Unit] = db.run(DBIOAction.seq(jobs.schema.create))
 

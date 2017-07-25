@@ -6,7 +6,7 @@ import javax.inject.Inject
 import Utils.CommonUtils
 import com.typesafe.config.Config
 import repositories.JobsRepository
-import repositories.dtos.dtos.JobDetails
+import repositories.dtos.dtos.{Job, JobDetails, JobExecution}
 
 import scala.async.Async.{async, await}
 import scala.collection.mutable
@@ -19,6 +19,8 @@ class JobsService @Inject()(
                              cfg: Config,
                              jobsRepo: JobsRepository,
                              jobScheduler: JobSchedulerService,
+                             scriptingService: ScriptingService,
+                             emailService: EmailService,
                              clock: Clock) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,29 +39,57 @@ class JobsService @Inject()(
         runJobBatch(currentJobBatch)
       }
       catch {
-        case _ => {
-          // retry
-          // send email
-          // resume
+        case exception: Exception => {
+          // TODO: may be retry
         }
       }
     }
   }
 
-  def runJobBatch(jobBatch: Seq[JobDetails]) = {
+  private def updateJobStatus(job: Job, status: Int): Future[Int] = {
+    val updatedJob = job.copy(status = status)
+    jobsRepo.update(updatedJob)
+  }
+
+  private def runJobBatch(jobBatch: Seq[JobDetails]) = {
     jobBatch.foreach(job => {
+      val executionId = CommonUtils.uuidString
+      updateJobStatus(job.job, 2)
       try {
-        runJob(job)
+        val jobInfo = runJob(job, executionId)
+
+        val updatedJob = job.job.copy(status = 3, lastRunTime = CommonUtils.currentTimeLong,
+          lastExecutionId = Option(executionId),
+          lastDataOutputSize = Option(jobInfo.outputSize), lastDuration = Option(jobInfo.duration))
+        jobsRepo.update(updatedJob)
       } catch {
-        // update processing state in db
-        case _ => throw new Exception()
+        case exception: Exception => {
+          val updatedJob = job.job.copy(status = 4, lastRunTime = CommonUtils.currentTimeLong,
+            lastExecutionId = Option(executionId))
+          jobsRepo.update(updatedJob)
+          emailService.sendMail(job.watchers.map(_.email), exception.getMessage)
+
+          throw exception
+        }
+      }
+    })
+  }
+
+  def runJob(job: JobDetails, jobExecutionId: String): JobInfo = {
+    val startTime = System.currentTimeMillis()
+    val outputSize = job.executables.foldLeft(0l)((outputSize, executable) => {
+      try {
+        outputSize + scriptingService.run(executable.script)
+      } catch {
+        case exception: Exception => {
+          jobsRepo.insertJobExecution(JobExecution(jobExecutionId, job.job.id.get, executable.id.get, 4))
+          throw exception
+        }
       }
     })
 
-  }
-
-  def runJob(job: JobDetails): Unit = {
-
+    val endTime = System.currentTimeMillis()
+    JobInfo(outputSize, (endTime - startTime))
   }
 
   private def getJobQueue(scheduledJobs: Seq[Seq[JobDetails]]): mutable.Queue[Seq[JobDetails]] = {
@@ -86,4 +116,7 @@ class JobsService @Inject()(
         (x._1, JobDetails(x._2.map(_._1).head, x._2.map(_._2), x._2.map(_._3)))
       })
   }
+
+  protected case class JobInfo(outputSize: Long, duration: Long)
+
 }
