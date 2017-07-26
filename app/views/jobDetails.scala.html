@@ -1,0 +1,21 @@
+@(job: repositories.dtos.dtos.Job)
+<h1>Job Name: @job.name </h1>
+
+<table border="1px solid black">
+    <thead>
+        <tr>
+            <td>Job Name</td>
+            <td>Status</td>
+            <td>Last Run Date</td>
+        </tr>
+    </thead>
+    <tbody>
+
+        <tr>
+            <td><a href="@controllers.routes.JobsController.find(job.id.get)">@job.name</a>
+            </td>
+            <td>@job.status</td>
+            <td>@job.lastRunTime</td>
+        </tr>
+    </tbody>
+</table>

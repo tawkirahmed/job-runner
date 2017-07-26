@@ -1,0 +1,29 @@
+@(jobs: Seq[repositories.dtos.dtos.Job])
+<h1> All Jobs </h1>
+
+<table border="1px solid black">
+    <thead>
+        <tr>
+            <td>Job Name</td>
+            <td>Status</td>
+            <td>Last Run Date</td>
+        </tr>
+    </thead>
+    <tbody>
+        @for(job <- jobs) {
+            <tr>
+                <td><a href="@controllers.routes.JobsController.find(job.id.get)">@job.name</a>
+                   </td>
+                <td>@job.status</td>
+                <td>@job.lastRunTime</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3">Displayed total jobs count: @{
+                jobs.size
+            }</td>
+        </tr>
+    </tfoot>
+</table>

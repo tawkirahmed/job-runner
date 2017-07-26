@@ -22,7 +22,11 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def find(id: Int): Future[Option[Job]] = db.run((for (job <- jobs if job.id === id) yield job).result.headOption)
+  def find(id: Int): Future[Job] = db.run((for (job <- jobs if job.id === id) yield job).result.head)
+
+  def findAll(): Future[Seq[Job]] = {
+    db.run((for (job <- jobs) yield job).result)
+  }
 
   def getExecutables: Seq[Executable] = {
     ???
