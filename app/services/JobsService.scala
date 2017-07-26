@@ -6,10 +6,11 @@ import javax.inject.Inject
 import Utils.CommonUtils
 import com.typesafe.config.Config
 import repositories.JobsRepository
-import repositories.dtos.dtos.{Job, JobDetails, JobExecution}
+import repositories.dtos.dtos._
 
 import scala.async.Async.{async, await}
 import scala.collection.mutable
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
@@ -22,8 +23,6 @@ class JobsService @Inject()(
                              scriptingService: ScriptingService,
                              emailService: EmailService,
                              clock: Clock) {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
 
   // TODO: For now jobs will be retrieved based on scheduled time when the run method gets invoked.
   def run = async {
@@ -39,8 +38,7 @@ class JobsService @Inject()(
       try {
         println("Running batch with following jobs: " + currentJobBatch.map(_.job.name).mkString(", "))
         runJobBatch(currentJobBatch)
-      }
-      catch {
+      } catch {
         case exception: Exception => {
           // TODO: may be retry
         }
@@ -100,8 +98,7 @@ class JobsService @Inject()(
     queue
   }
 
-  private def getScheduledJobsDetails(scheduledJobs: Seq[scala.Seq[Int]])
-  : Future[Seq[Seq[JobDetails]]] = async {
+  private def getScheduledJobsDetails(scheduledJobs: Seq[scala.Seq[Int]]): Future[Seq[Seq[JobDetails]]] = async {
     val jobDetails = await(getJobDetails(scheduledJobs.flatten))
 
     scheduledJobs.map(schedules => {

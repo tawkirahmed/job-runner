@@ -1,7 +1,7 @@
-import com.google.inject.Guice
+import Utils.FakeApp
 import org.scalatest.FlatSpec
+import repositories.JobsRepository
 import repositories.dtos.dtos.{Executable, Job, JobDependency, JobWatcher}
-import repositories.{DbConfiguration, JobsRepository}
 import services.JobsService
 
 import scala.concurrent.Await
@@ -10,14 +10,10 @@ import scala.concurrent.duration.Duration
 /**
   * Created by Tawkir Ahmed Fakir on 7/25/2017.
   */
-class AppSpec extends FlatSpec with DbConfiguration {
+class AppSpec extends FlatSpec with FakeApp {
 
-  private lazy val injector = Guice.createInjector(
-    new TestModule()
-  )
-
-  val jobService = injector.getInstance(classOf[JobsService])
-  val jobRepo = injector.getInstance(classOf[JobsRepository])
+  val jobService = configuredApp.injector.instanceOf(classOf[JobsService])
+  val jobRepo = configuredApp.injector.instanceOf(classOf[JobsRepository])
   jobRepo.initAllTables()
 
   //
@@ -58,7 +54,6 @@ class AppSpec extends FlatSpec with DbConfiguration {
       script = "echo script of job 4", job.id.get)), Duration.Inf)
     val watcher = Await.result(jobRepo.insertWatcher(JobWatcher(id = None,
       jobId = job.id.get, name = "Test User 1", email = "test@gmail.com")), Duration.Inf)
-
 
     Await.result(jobRepo.updateExecutable(e1.copy(script = "ERROR")), Duration.Inf)
 

@@ -1,9 +1,7 @@
 package services
 
-import java.time.Clock
 import javax.inject.Inject
 
-import com.typesafe.config.Config
 import repositories.JobsRepository
 
 /**
