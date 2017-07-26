@@ -42,6 +42,9 @@ That is test case 3 will validate both test case 1 and 2.
   3. Add one more job which depends on NONE. But now make one job from test case 2 fail. This new job should not depends on the failure of previous job as it is
   not dependant on it.
   
-  4. After correcting the job from test case 2, the failing job should be re run again.
+  4. After correcting the job from test case 2, the failing job should be re run again. Since the parent job of the failing job has already been run successfully
+  only the failed job should be run again.
   
-  5. 
+  5. Now add a new job which depends on the failing job from test case 4. Now on the first run, the failing job will fail and thus the dependant new job will not be executed. In the second run, 
+  after correcting the failing job, the failing job will run and then the dependant new job will also run.
+  

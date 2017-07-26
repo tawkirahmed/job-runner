@@ -1,5 +1,7 @@
 package repositories.dtos
 
+import java.sql.Date
+
 import play.api.db.slick.HasDatabaseConfigProvider
 import repositories.dtos.dtos._
 import slick.jdbc.JdbcProfile
@@ -23,7 +25,7 @@ trait TableMappings extends HasDatabaseConfigProvider[JdbcProfile] {
 
     def status = column[Int]("STATUS")
 
-    def lastRunTime = column[Long]("LAST_RUN_TIME")
+    def lastRunDate = column[Option[Date]]("LAST_RUN_TIME")
 
     def runTime = column[Option[Long]]("RUN_TIME")
 
@@ -43,7 +45,7 @@ trait TableMappings extends HasDatabaseConfigProvider[JdbcProfile] {
     def nameIndex = index("JOB_NAME_IDX", name, false)
 
     // Select
-    def * = (id.?, name, status, lastRunTime, runTime, minimumDataOutputSize,
+    def * = (id.?, name, status, lastRunDate, runTime, minimumDataOutputSize,
       maximumDataOutputSize, expectedDuration,
       lastExecutionId, lastDataOutputSize, lastDuration) <> (Job.tupled, Job.unapply)
   }

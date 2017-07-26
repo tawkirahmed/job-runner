@@ -1,5 +1,6 @@
 package Utils
 
+import java.sql.Date
 import java.time.{Clock, ZoneId, ZonedDateTime}
 import java.util.UUID
 
@@ -10,6 +11,10 @@ object CommonUtils {
   private val Z = ZoneId.of("Z")
 
   def nowUTC(clock: Clock = Clock.systemUTC()) = ZonedDateTime.now(clock.withZone(Z))
+
+  def nowJavaDate(clock: Clock = Clock.systemUTC()) = {
+    new Date(ZonedDateTime.now(clock.withZone(Z)).toInstant().getEpochSecond * 1000l)
+  }
 
   def uuidString = UUID.randomUUID().toString
 

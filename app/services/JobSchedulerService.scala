@@ -17,9 +17,9 @@ import scala.concurrent.Future
 class JobSchedulerService @Inject()(cfg: Config, jobsRepo: JobsRepository, dfs: DFS) {
 
   def getJobsRunOrder(executionStartTime: ZonedDateTime): Future[Seq[Seq[Int]]] = async {
-    val startingJobs = await(jobsRepo.getStartingJobs)
+    val startingJobs = await(jobsRepo.getStartingJobs(executionStartTime))
 
-    println("Starting jobs number " + startingJobs.size)
+    println("Starting jobs size: " + startingJobs.size)
     val edgeList = await(jobsRepo.getJobDependencies).toList
 
     dfs.getTopSortWithIndependentNodes(startingJobs.map(_.id.get), edgeList)

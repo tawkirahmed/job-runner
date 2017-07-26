@@ -75,17 +75,18 @@ class JobsService @Inject()(
       try {
         val jobInfo = runJob(job, executionId)
 
-        val updatedJob = job.job.copy(status = 3, lastRunTime = CommonUtils.currentTimeLong,
+        val updatedJob = job.job.copy(status = 3,
+          lastRunTime = Option(CommonUtils.nowJavaDate(clock)),
           lastExecutionId = Option(executionId),
           lastDataOutputSize = Option(jobInfo.outputSize), lastDuration = Option(jobInfo.duration))
         jobsRepo.update(updatedJob)
       } catch {
         case exception: Exception => {
-          val updatedJob = job.job.copy(status = 4, lastRunTime = CommonUtils.currentTimeLong,
+          val updatedJob = job.job.copy(status = 4,
+            lastRunTime = Option(CommonUtils.nowJavaDate(clock)),
             lastExecutionId = Option(executionId))
           jobsRepo.update(updatedJob)
           emailService.sendMail(job.watchers.map(_.email), exception.getMessage)
-
           throw exception
         }
       }

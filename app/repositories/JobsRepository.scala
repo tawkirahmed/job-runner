@@ -1,5 +1,7 @@
 package repositories
 
+import java.sql.Date
+import java.time.ZonedDateTime
 import javax.inject.Inject
 
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -28,14 +30,21 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
 
   def getJobDependencies: Future[Seq[(Int, Int)]] = {
     // TODO: Need to add completed depency
-    db.run((for (edge <- jobDependencies) yield edge.jobId -> edge.dependantJobId).result)
+    //    db.run((for (edge <- jobDependencies) yield edge.jobId -> edge.dependantJobId).result)
+    db.run((for {
+      edge <- jobDependencies
+      job <- jobs if (job.id === edge.jobId && job.status =!= 3)
+    } yield edge.jobId -> edge.dependantJobId).result)
   }
 
-  def getStartingJobs: Future[Seq[Job]] = {
+  def getStartingJobs(executionStartTime: ZonedDateTime): Future[Seq[Job]] = {
+    val date = new Date(executionStartTime.toInstant().getEpochSecond * 1000l)
     db.run {
       (for {
         (job, dependency) <- jobs joinLeft jobDependencies on (_.id === _.dependantJobId)
-        if !dependency.isDefined && (!job.runTime.isDefined || true)
+        if (
+          (!dependency.isDefined && (!job.runTime.isDefined || true) && (!job.lastRunDate.isDefined || job.lastRunDate < date))
+            || (job.status === 4 && job.lastRunDate === date))
       } yield job).result
     }
   }
