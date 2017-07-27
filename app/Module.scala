@@ -19,4 +19,5 @@ class Module extends AbstractModule {
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone)
   }
 
+
 }

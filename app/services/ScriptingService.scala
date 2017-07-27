@@ -44,7 +44,6 @@ class ScriptingService @Inject()() {
     val stderr = new StringBuilder
     val status = osTransformedCommand ! ProcessLogger(stdout append _, stderr append _)
 
-    println(stdout)
     CommandStatus(status, stdout, stderr)
   }
 

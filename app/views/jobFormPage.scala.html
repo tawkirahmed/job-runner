@@ -1,0 +1,18 @@
+@(jobForm: Form[controllers.JobsController.JobForm], jobOptions: Seq[(String, String)] = Nil)(implicit request: RequestHeader, messagesProvider: MessagesProvider)
+
+
+
+
+    <h3>Job Details</h3>
+    @helper.form(action = controllers.routes.JobsController.save()) {
+        <input type="hidden" name="id" value="@jobForm.data.get("id")" />
+        @helper.inputText(jobForm("name"), '_label -> "Job Name:", '_showConstraints -> false) <br/>
+        @helper.inputText(jobForm("minDataOutSize"), '_label -> "Minimum data output size:", '_showConstraints -> false) <br/>
+        @helper.inputText(jobForm("maxDataOutSize"), '_label -> "Maximum data output size:", '_showConstraints -> false) <br/>
+        @helper.inputText(jobForm("expectedTime"), '_label -> "Expected job completion time:", '_showConstraints -> false) <br/>
+        @helper.textarea(jobForm("script"), '_label -> "Script to execute:", '_showConstraints -> false) <br/>
+        @helper.inputText(jobForm("watchers"), '_label -> "Job watcher email:", '_showConstraints -> false) <br/>
+        @helper.select(jobForm("dependencies"), options = jobOptions, '_label -> "Depends on:", '_showConstraints -> false, 'multiple -> "multiple")
+
+        <input type="submit">
+    }

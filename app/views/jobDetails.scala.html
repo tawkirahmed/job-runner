@@ -19,5 +19,15 @@
                 <td>@job.lastRunTime</td>
             </tr>
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3">
+                    <form method="GET" action="@controllers.routes.JobsController.index">
+                        <input type="submit" value="View All"/>
+                        <br/>
+                    </form>
+                </td>
+            </tr>
+        </tfoot>
     </table>
 }

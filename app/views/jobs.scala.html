@@ -18,20 +18,29 @@
                 </td>
                 <td>@job.status</td>
                 <td>@job.lastRunTime</td>
-                <td><form method="POST" action="@controllers.routes.JobsController.run(job.id.get)">
-                    <input type="submit" value="Run"/>
-                    <br/>
-                </form>
+                <td>
+                    <form method="POST" action="@controllers.routes.JobsController.run(job.id.get)">
+                        <input type="submit" value="Run"/>
+                        <br/>
+                    </form>
                 </td>
-                <td><form method="POST" action="@controllers.routes.JobsController.update(job.id.get)">
-                    <input type="submit" value="Edit"/>
-                    <br/>
-                </form>
+                <td>
+                    <form method="POST" action="@controllers.routes.JobsController.update(job.id.get)">
+                        <input type="submit" value="Edit"/>
+                        <br/>
+                    </form>
                 </td>
-                <td><form method="POST" action="@controllers.routes.JobsController.delete(job.id.get)">
-                    <input type="submit" value="Delete"/>
-                    <br/>
-                </form>
+                <td>
+                    <form method="POST" action="@controllers.routes.JobsController.delete(job.id.get)">
+                        <input type="submit" value="Delete"/>
+                        <br/>
+                    </form>
+                </td>
+                <td>
+                    <form method="POST" action="@controllers.routes.JobsController.clearLastRun(job.id.get)">
+                        <input type="submit" value="Clear Last Run"/>
+                        <br/>
+                    </form>
                 </td>
 
             </tr>
@@ -41,7 +50,26 @@
             <tr>
                 <td colspan="3">Displayed total jobs count: @{
                     jobs.size
-                }</td>
+                }
+                </td>
+                <td>
+                    <form method="POST" action="@controllers.routes.JobsController.add">
+                        <input type="submit" value="Add new"/>
+                        <br/>
+                    </form>
+                </td>
+                <td>
+                    <form method="POST" action="@controllers.routes.JobsController.runAll">
+                        <input type="submit" value="Run All"/>
+                        <br/>
+                    </form>
+                </td>
+                <td>
+                    <form method="POST" action="@controllers.routes.JobsController.clearLastRunAll">
+                        <input type="submit" value="Clear Last Run"/>
+                        <br/>
+                    </form>
+                </td>
             </tr>
         </tfoot>
     </table>

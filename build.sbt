@@ -18,3 +18,5 @@ libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-async" % "0.9.6",
   "mysql" % "mysql-connector-java" % "6.0.6"
 )
+
+routesGenerator := InjectedRoutesGenerator

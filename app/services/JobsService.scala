@@ -12,7 +12,8 @@ import repositories.dtos.dtos._
 import scala.async.Async.{async, await}
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 /**
   * Created by Tawkir Ahmed Fakir on 7/25/2017.
@@ -28,7 +29,6 @@ class JobsService @Inject()(
 
   // TODO: For now jobs will be retrieved based on scheduled time when the run method gets invoked.
   def run = async {
-    println("------------------------------------------------")
     val currentTime = CommonUtils.nowUTC(clock)
 
     val scheduledJobs = await(jobScheduler.getJobsRunOrder(currentTime))
@@ -38,7 +38,6 @@ class JobsService @Inject()(
     while (!jobQueue.isEmpty) {
       val currentJobBatch = jobQueue.dequeue()
       try {
-        println("Running batch with following jobs: " + currentJobBatch.map(_.job.name).mkString(", "))
         runJobBatch(currentJobBatch)
       } catch {
         case exception: Exception => {
@@ -48,7 +47,14 @@ class JobsService @Inject()(
     }
   }
 
-  private def runJob(job: JobDetails, jobExecutionId: String): JobInfo = {
+  def run(jobId: Int) = {
+    getJobDetails(jobId).map(jobDetails => {
+      runJobBatch(Seq(jobDetails))
+    })
+  }
+
+  private def runJob(job: JobDetails, jobExecutionId: String) = {
+    Await.result(updateJobStatus(job.job, 2), Duration.Inf)
     val startTime = System.currentTimeMillis()
     val outputSize = job.executables.foldLeft(0l)((outputSize, executable) => {
       try {
@@ -70,24 +76,24 @@ class JobsService @Inject()(
     jobsRepo.update(updatedJob)
   }
 
+  // TODO: Check all async operations
   private def runJobBatch(jobBatch: Seq[JobDetails]) = {
     jobBatch.foreach(job => {
       val executionId = CommonUtils.uuidString
-      updateJobStatus(job.job, 2)
       try {
-        val jobInfo = runJob(job, executionId)
 
+        val jobInfo = runJob(job, executionId)
         val updatedJob = job.job.copy(status = 3,
           lastRunTime = Option(CommonUtils.nowJavaDate(clock)),
           lastExecutionId = Option(executionId),
           lastDataOutputSize = Option(jobInfo.outputSize), lastDuration = Option(jobInfo.duration))
-        jobsRepo.update(updatedJob)
+        Await.result(jobsRepo.update(updatedJob), Duration.Inf)
       } catch {
         case exception: Exception => {
           val updatedJob = job.job.copy(status = 4,
             lastRunTime = Option(CommonUtils.nowJavaDate(clock)),
             lastExecutionId = Option(executionId))
-          jobsRepo.update(updatedJob)
+          Await.result(jobsRepo.update(updatedJob), Duration.Inf)
           emailService.sendMail(job.watchers.map(_.email), exception.getMessage)
           throw exception
         }
@@ -111,11 +117,19 @@ class JobsService @Inject()(
     })
   }
 
+  def getJobDetails(jobId: Int): Future[JobDetails] = async {
+    await(jobsRepo.getJobDetails(jobId))
+      .groupBy(_._1.id.head)
+      .map(x => {
+        JobDetails(x._2.map(_._1).head, x._2.map(_._2), x._2.flatMap(_._3), x._2.flatMap(_._4))
+      }).head
+  }
+
   private def getJobDetails(jobIds: Seq[Int]): Future[Map[Int, JobDetails]] = async {
     await(jobsRepo.getJobDetails(jobIds))
       .groupBy(_._1.id.head)
       .map(x => {
-        (x._1, JobDetails(x._2.map(_._1).head, x._2.map(_._2), x._2.map(_._3)))
+        (x._1, JobDetails(x._2.map(_._1).head, x._2.map(_._2), x._2.flatMap(_._3)))
       })
   }
 
