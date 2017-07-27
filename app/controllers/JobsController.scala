@@ -3,11 +3,8 @@ package controllers
 import javax.inject._
 
 import akka.actor.ActorSystem
-import play.api.libs.json
-import play.api.libs.json.Json
 import play.api.mvc._
 import repositories.JobsRepository
-import repositories.dtos.dtos.Job
 import services.JobsService
 
 import scala.concurrent.duration._
@@ -21,15 +18,26 @@ class JobsController @Inject()(cc: ControllerComponents,
                               )(implicit exec: ExecutionContext) extends AbstractController(cc) {
 
   def index = Action.async {
-    jobRepo.findAll().map(x => Ok(views.html.jobs(x)))
+    jobRepo.findAll().map(job => Ok(views.html.jobs(job)))
   }
 
   def find(jobId: Int) = Action.async {
     jobRepo.find(jobId).map(x => Ok(views.html.jobDetails(x)))
   }
 
-  def run = Action.async {
-    jobService.run.map(x => Ok("Jobs has been started"))
+  def update(jobId: Int) = Action.async {
+    jobRepo.find(jobId).map(job => Ok(views.html.jobUpdate(job)))
+  }
+
+  def delete(jobId: Int) = Action.async {
+    jobRepo.delete(jobId).map(x => {
+      Ok("Job is deleted.")
+    })
+  }
+
+  def run(jobId: Int) = Action {
+    // TODO: To be implemented
+    Ok("Job has been started")
   }
 
   // TODO: For future use the below code will work as an example

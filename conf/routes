@@ -1,8 +1,11 @@
 
-GET     /                           controllers.JobsController.index
-GET     /jobs                           controllers.JobsController.index
-GET     /jobs/:jobId                           controllers.JobsController.find(jobId: Int)
+GET         /                          controllers.JobsController.index
+GET         /jobs                      controllers.JobsController.index
+GET         /jobs/:jobId               controllers.JobsController.find(jobId: Int)
+# TODO: Make the endpoints pure REST
+POST        /jobs/edit/:jobId          controllers.JobsController.update(jobId: Int)
+POST        /jobs/delete/:jobId        controllers.JobsController.delete(jobId: Int)
 
-GET     /jobs/run                           controllers.JobsController.run
+POST        /jobs/run/:jobId           controllers.JobsController.run(jobId: Int)
 
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET         /assets/*file              controllers.Assets.versioned(path="/public", file: Asset)

@@ -87,6 +87,10 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
 
   def update(job: Job): Future[Int] = db.run(jobs.filter(_.id === job.id).update(job))
 
+  def delete(jobId: Int): Future[Int] = {
+    db.run(jobs.filter(_.id === jobId).delete)
+  }
+
   def updateExecutable(ex: Executable): Future[Int] = db.run(executables.filter(_.id === ex.id).update(ex))
 
   def insertJobExecution(jobExecution: JobExecution): Future[JobExecution] = db

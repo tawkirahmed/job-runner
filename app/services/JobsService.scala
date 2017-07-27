@@ -1,7 +1,6 @@
 package services
 
 import java.time.Clock
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 import Utils.CommonUtils
@@ -14,7 +13,6 @@ import scala.async.Async.{async, await}
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.concurrent.duration.{Duration, FiniteDuration}
 
 /**
   * Created by Tawkir Ahmed Fakir on 7/25/2017.
