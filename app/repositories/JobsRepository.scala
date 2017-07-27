@@ -22,6 +22,8 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  initAllTables() // TODO: Remove, this should be taken care of by deployement script
+
   def find(id: Int): Future[Job] = db.run((for (job <- jobs if job.id === id) yield job).result.head)
 
   def findAll(): Future[Seq[Job]] = {

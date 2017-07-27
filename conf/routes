@@ -4,6 +4,8 @@ GET         /jobs                      controllers.JobsController.index
 GET         /jobs/:jobId               controllers.JobsController.find(jobId: Int)
 # TODO: Make the endpoints pure REST
 POST        /jobs/edit/:jobId          controllers.JobsController.update(jobId: Int)
+POST        /jobs/save         controllers.JobsController.save()
+POST        /jobs/add         controllers.JobsController.add()
 POST        /jobs/delete/:jobId        controllers.JobsController.delete(jobId: Int)
 
 POST        /jobs/run/:jobId           controllers.JobsController.run(jobId: Int)

@@ -1,48 +1,58 @@
 @(jobs: Seq[repositories.dtos.dtos.Job])
 @main(title = "Job Manager - All Jobs") {
-    <h1> All Jobs </h1>
+<h1> All Jobs </h1>
 
-    <table border="1px solid black">
-        <thead>
-            <tr>
-                <td>Job Name</td>
-                <td>Status</td>
-                <td>Last Run Date</td>
-                <td colspan="3">Actions</td>
-            </tr>
-        </thead>
-        <tbody>
-        @for(job <- jobs) {
-            <tr>
-                <td><a href="@controllers.routes.JobsController.find(job.id.get)">@job.name</a>
-                </td>
-                <td>@job.status</td>
-                <td>@job.lastRunTime</td>
-                <td><form method="POST" action="@controllers.routes.JobsController.run(job.id.get)">
-                    <input type="submit" value="Run"/>
-                    <br/>
-                </form>
-                </td>
-                <td><form method="POST" action="@controllers.routes.JobsController.update(job.id.get)">
-                    <input type="submit" value="Edit"/>
-                    <br/>
-                </form>
-                </td>
-                <td><form method="POST" action="@controllers.routes.JobsController.delete(job.id.get)">
-                    <input type="submit" value="Delete"/>
-                    <br/>
-                </form>
-                </td>
+<table border="1px solid black">
+    <thead>
+    <tr>
+        <td>Job Name</td>
+        <td>Status</td>
+        <td>Last Run Date</td>
+        <td colspan="3">Actions</td>
+    </tr>
+    </thead>
+    <tbody>
+    @for(job <- jobs) {
+    <tr>
+        <td><a href="@controllers.routes.JobsController.find(job.id.get)">@job.name</a>
+        </td>
+        <td>@job.status</td>
+        <td>@job.lastRunTime</td>
+        <td>
+            <form method="POST" action="@controllers.routes.JobsController.run(job.id.get)">
+                <input type="submit" value="Run"/>
+                <br/>
+            </form>
+        </td>
+        <td>
+            <form method="POST" action="@controllers.routes.JobsController.update(job.id.get)">
+                <input type="submit" value="Edit"/>
+                <br/>
+            </form>
+        </td>
+        <td>
+            <form method="POST" action="@controllers.routes.JobsController.delete(job.id.get)">
+                <input type="submit" value="Delete"/>
+                <br/>
+            </form>
+        </td>
 
-            </tr>
-        }
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="3">Displayed total jobs count: @{
-                    jobs.size
-                }</td>
-            </tr>
-        </tfoot>
-    </table>
+    </tr>
+    }
+    </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="3">Displayed total jobs count: @{
+            jobs.size
+            }
+        </td>
+        <td>
+            <form method="POST" action="@controllers.routes.JobsController.add">
+                <input type="submit" value="Add new"/>
+                <br/>
+            </form>
+        </td>
+    </tr>
+    </tfoot>
+</table>
 }
