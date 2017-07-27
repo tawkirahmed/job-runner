@@ -48,3 +48,8 @@ That is test case 3 will validate both test case 1 and 2.
   5. Now add a new job which depends on the failing job from test case 4. Now on the first run, the failing job will fail and thus the dependant new job will not be executed. In the second run, 
   after correcting the failing job, the failing job will run and then the dependant new job will also run.
   
+  
+###### Improvements:
+
+  1. Limit auto retry of failed job, but allow force run of a failed job
+  

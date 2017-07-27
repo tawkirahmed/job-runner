@@ -1,9 +1,11 @@
 package services
 
 import java.time.Clock
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 import Utils.CommonUtils
+import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import repositories.JobsRepository
 import repositories.dtos.dtos._
@@ -12,6 +14,7 @@ import scala.async.Async.{async, await}
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 /**
   * Created by Tawkir Ahmed Fakir on 7/25/2017.
@@ -22,7 +25,8 @@ class JobsService @Inject()(
                              jobScheduler: JobSchedulerService,
                              scriptingService: ScriptingService,
                              emailService: EmailService,
-                             clock: Clock) {
+                             clock: Clock,
+                             actorSystem: ActorSystem) {
 
   // TODO: For now jobs will be retrieved based on scheduled time when the run method gets invoked.
   def run = async {
