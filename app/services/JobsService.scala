@@ -94,7 +94,7 @@ class JobsService @Inject()(
             lastRunTime = Option(CommonUtils.nowJavaDate(clock)),
             lastExecutionId = Option(executionId))
           Await.result(jobsRepo.update(updatedJob), Duration.Inf)
-          emailService.sendMail(job.watchers.map(_.email), exception.getMessage)
+          emailService.sendEmail(job.watchers.map(_.email), exception.getMessage)
           throw exception
         }
       }

@@ -16,7 +16,9 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.196",
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.0.0" % Test,
   "org.scala-lang.modules" %% "scala-async" % "0.9.6",
-  "mysql" % "mysql-connector-java" % "6.0.6"
+  "mysql" % "mysql-connector-java" % "6.0.6",
+  "com.typesafe.play" %% "play-mailer" % "6.0.0",
+  "com.typesafe.play" %% "play-mailer-guice" % "6.0.0"
 )
 
 routesGenerator := InjectedRoutesGenerator

@@ -151,7 +151,11 @@ class JobsController @Inject()(cc: ControllerComponents,
     })
 
     jobInput.watcher.map(watcher => {
-      jobRepo.updateWatchers(jobDetails.watchers.head.copy(jobId = updatedJobId, email = watcher))
+      if (jobDetails.watchers.isEmpty) {
+        jobRepo.insertWatcher(JobWatcher(jobId = updatedJobId, name = "", email = watcher))
+      } else {
+        jobRepo.updateWatchers(jobDetails.watchers.head.copy(jobId = updatedJobId, email = watcher))
+      }
     })
 
     updatedJobId
