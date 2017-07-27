@@ -9,12 +9,13 @@
 @helper.inputText(jobForm("job.minimumDataOutputSize"), '_label -> "Minimum data output size:", '_showConstraints -> false)<br/>
 @helper.inputText(jobForm("job.maximumDataOutputSize"), '_label -> "Maximum data output size:", '_showConstraints -> false)<br/>
 @helper.inputText(jobForm("job.expectedDuration"), '_label -> "Expected job completion time", '_showConstraints -> false)<br/>
+@helper.select(jobForm("dependencies"), options = jobOptions, '_label -> "Depends on", '_showConstraints -> false, 'multiple->"multiple")
 
-<h3>Job Dependencies</h3>
+<!--<h3>Job Dependencies</h3>
 @helper.repeatWithIndex(jobForm("dependencies"), min = 1) { (dependencyField, index) =>
-@helper.select(jobForm(dependencyField.name.toString), options = jobOptions, '_label -> "Depends on", '_showConstraints -> false)
-<!--@helper.select(jobForm(dependencyField.name.toString + ".jobId"), options = jobOptions, '_label -> "Depends on", '_showConstraints -> false)-->
-}
+@helper.select(jobForm(dependencyField.name.toString), options = jobOptions, '_label -> "Depends on", '_showConstraints -> false, 'multiple->"multiple")
+&lt;!&ndash;@helper.select(jobForm(dependencyField.name.toString + ".jobId"), options = jobOptions, '_label -> "Depends on", '_showConstraints -> false)&ndash;&gt;
+}-->
 
 <input type="submit">
 }
