@@ -68,7 +68,9 @@ class JobsService @Inject()(
     })
 
     val endTime = System.currentTimeMillis()
-    JobInfo(outputSize, (endTime - startTime))
+    val dataSize = (outputSize / 1024)
+    val duration = (endTime - startTime) / (1000 * 60)
+    JobInfo(dataSize, duration)
   }
 
   private def updateJobStatus(job: Job, status: Int): Future[Int] = {
@@ -88,6 +90,7 @@ class JobsService @Inject()(
           lastExecutionId = Option(executionId),
           lastDataOutputSize = Option(jobInfo.outputSize), lastDuration = Option(jobInfo.duration))
         Await.result(jobsRepo.update(updatedJob), Duration.Inf)
+        verifyJobHealth(jobInfo, updatedJob, job.watchers)
       } catch {
         case exception: Exception => {
           val updatedJob = job.job.copy(status = 4,
@@ -99,6 +102,23 @@ class JobsService @Inject()(
         }
       }
     })
+  }
+
+  private def verifyJobHealth(jobInfo: JobInfo, job: Job, watchers: Seq[JobWatcher]) = {
+    if (job.minimumDataOutputSize.isDefined && jobInfo.outputSize < job.minimumDataOutputSize.get) {
+      emailService.sendEmail(watchers.map(_.email),
+        s"The job: ${job.name} has produced less than defined minimum data limit.")
+    }
+
+    if (job.maximumDataOutputSize.isDefined && jobInfo.outputSize > job.maximumDataOutputSize.get) {
+      emailService.sendEmail(watchers.map(_.email),
+        s"The job: ${job.name} has produced more than defined maximum data limit.")
+    }
+
+    if (job.expectedDuration.isDefined && jobInfo.duration > job.expectedDuration.get) {
+      emailService.sendEmail(watchers.map(_.email),
+        s"The job: ${job.name} has took more than defined maximum job duration.")
+    }
   }
 
   private def getJobQueue(scheduledJobs: Seq[Seq[JobDetails]]): mutable.Queue[Seq[JobDetails]] = {
