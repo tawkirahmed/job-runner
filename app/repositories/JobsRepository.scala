@@ -34,12 +34,12 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     ???
   }
 
-  def getJobDependencies: Future[Seq[(Int, Int)]] = {
+  def getJobDependencies(executionStartTime: ZonedDateTime): Future[Seq[(Int, Int)]] = {
     // TODO: Need to add completed depency
-    //    db.run((for (edge <- jobDependencies) yield edge.jobId -> edge.dependantJobId).result)
+    val date = new Date(executionStartTime.toInstant().getEpochSecond * 1000l)
     db.run((for {
       edge <- jobDependencies
-      job <- jobs if (job.id === edge.jobId && job.status =!= 3)
+      job <- jobs if (job.id === edge.jobId && (job.status =!= 3 || !job.lastRunDate.isDefined || job.lastRunDate < date))
     } yield edge.jobId -> edge.dependantJobId).result)
   }
 
@@ -55,16 +55,43 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     }
   }
 
-  def getJobDetails(jobIds: Seq[Int]): Future[Seq[(Job, Executable, JobWatcher)]] = {
-    val query =
+  def getJobDetails(jobIds: Seq[Int]): Future[Seq[(Job, Executable, Option[JobWatcher])]] = {
+    val q1 =
       for {
         job <- jobs if job.id.inSetBind(jobIds)
         executable <- executables if executable.jobId === job.id
-        watcher <- jobWatchers if watcher.jobId === job.id //TODO: Make it left join
-      } yield (job, executable, watcher)
+      } yield (job, executable)
+
+    val q2 = for {
+      (jobWithExecutable, watcher) <- q1 joinLeft jobWatchers on (_._1.id === _.jobId)
+    } yield (jobWithExecutable._1, jobWithExecutable._2, watcher)
 
     db.run {
-      query.result
+      q2.result
+    }
+  }
+
+  def getJobDetails(jobId: Int): Future[Seq[(Job, Executable, Option[JobWatcher], Option[Job])]] = {
+    val q1 =
+      for {
+        job <- jobs if job.id === jobId
+        executable <- executables if executable.jobId === job.id
+      } yield (job, executable)
+
+    val q2 = for {
+      (jobWithExecutable, watcher) <- q1 joinLeft jobWatchers on (_._1.id === _.jobId)
+    } yield (jobWithExecutable._1, jobWithExecutable._2, watcher)
+
+    val q3 = for {
+      (jew, dependencies) <- q2 joinLeft jobDependencies on (_._1.id === _.dependantJobId)
+    } yield (jew._1, jew._2, jew._3, dependencies)
+
+    val q4 = for {
+      (jewd, dj) <- q3 joinLeft jobs on (_._4.map(_.jobId) === _.id)
+    } yield (jewd._1, jewd._2, jewd._3, dj)
+
+    db.run {
+      q4.result
     }
   }
 
@@ -87,16 +114,22 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     .run(jobDependencies returning jobDependencies.map(_.id) += dependency)
     .map(id => dependency.copy(id = Some(id)))
 
+  def insertJobExecution(jobExecution: JobExecution): Future[JobExecution] = db
+    .run(jobExecutions returning jobExecutions += jobExecution)
+
   def update(job: Job): Future[Int] = db.run(jobs.filter(_.id === job.id).update(job))
+
+  def updateWatchers(watcher: JobWatcher): Future[Int] = db.run(jobWatchers.filter(_.id === watcher.id).update(watcher))
 
   def delete(jobId: Int): Future[Int] = {
     db.run(jobs.filter(_.id === jobId).delete)
   }
 
-  def updateExecutable(ex: Executable): Future[Int] = db.run(executables.filter(_.id === ex.id).update(ex))
+  def deleteDependenciesOf(id: Int): Future[Int] = {
+    db.run(jobDependencies.filter(_.dependantJobId === id).delete)
+  }
 
-  def insertJobExecution(jobExecution: JobExecution): Future[JobExecution] = db
-    .run(jobExecutions returning jobExecutions += jobExecution)
+  def updateExecutable(ex: Executable): Future[Int] = db.run(executables.filter(_.id === ex.id).update(ex))
 
   def initAllTables(): Future[Unit] = {
     // TODO: https://stackoverflow.com/questions/33929709/scala-slick-how-to-create-schema-only-if-it-does-not-exist

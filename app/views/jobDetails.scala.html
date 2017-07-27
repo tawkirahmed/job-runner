@@ -1,23 +1,33 @@
 @(job: repositories.dtos.dtos.Job)
 @main(title = "Job Manager - Job Details") {
-<h1>Job Name: @job.name </h1>
+    <h1>Job Name: @job.name </h1>
 
-<table border="1px solid black">
-    <thead>
-    <tr>
-        <td>Job Name</td>
-        <td>Status</td>
-        <td>Last Run Date</td>
-    </tr>
-    </thead>
-    <tbody>
+    <table border="1px solid black">
+        <thead>
+            <tr>
+                <td>Job Name</td>
+                <td>Status</td>
+                <td>Last Run Date</td>
+            </tr>
+        </thead>
+        <tbody>
 
-    <tr>
-        <td><a href="@controllers.routes.JobsController.find(job.id.get)">@job.name</a>
-        </td>
-        <td>@job.status</td>
-        <td>@job.lastRunTime</td>
-    </tr>
-    </tbody>
-</table>
+            <tr>
+                <td><a href="@controllers.routes.JobsController.find(job.id.get)">@job.name</a>
+                </td>
+                <td>@job.status</td>
+                <td>@job.lastRunTime</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3">
+                    <form method="GET" action="@controllers.routes.JobsController.index">
+                        <input type="submit" value="View All"/>
+                        <br/>
+                    </form>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
 }

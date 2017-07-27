@@ -21,8 +21,10 @@ class ScheduledTasks @Inject()(
 
   val delay = getDelay
 
-  actorSystem.scheduler.schedule(initialDelay = Duration(1, TimeUnit.SECONDS), interval = delay) {
-    jobService.run
+  if (cfg.getBoolean("app.schedule.enabled")) {
+    actorSystem.scheduler.schedule(initialDelay = Duration(1, TimeUnit.SECONDS), interval = delay) {
+      jobService.run
+    }
   }
 
 

@@ -7,11 +7,13 @@ import java.sql.Date
   */
 object dtos {
 
-  case class JobDetails(job: Job, executables: Seq[Executable], watchers: Seq[JobWatcher])
+  case class JobDetails(job: Job, executables: Seq[Executable],
+                        watchers: Seq[JobWatcher],
+                        parentJobs: Seq[Job] = Nil)
 
   // TODO: make staus an enum. For now the mapping is as follows
   // 1 -> idle, 2 -> running, 3 -> completed, 4 -> error
-  case class Job(id: Option[Int], name: String, status: Int = 1,
+  case class Job(id: Option[Int] = None, name: String, status: Int = 1,
                  lastRunTime: Option[Date] = None, runTime: Option[Long] = None,
                  minimumDataOutputSize: Option[Long] = None, // in kilobytes
                  maximumDataOutputSize: Option[Long] = None, // in kilobytes
@@ -24,15 +26,15 @@ object dtos {
   // TODO: Keeping executable to job as a one to many mapping but it may be a many to many mapping also
   // avoiding complexities for now
   // if later on we make it as many to many mapping then the jobs will be able to share same scripts
-  case class Executable(id: Option[Int], script: String, jobId: Int)
+  case class Executable(id: Option[Int] = None, script: String, jobId: Int)
 
-  case class JobDependency(id: Option[Int], jobId: Int, dependantJobId: Int)
+  case class JobDependency(id: Option[Int] = None, jobId: Int, dependantJobId: Int)
 
   // This class will hold information regarding every execution of jobs. We may clean the table from time to time
   // 1 -> idle, 2 -> running, 3 -> completed, 4 -> error
   case class JobExecution(id: String, jobId: Int, executableId: Int, status: Int)
 
   // Emails will be sent to the watchers of a job
-  case class JobWatcher(id: Option[Int], jobId: Int, name: String, email: String)
+  case class JobWatcher(id: Option[Int] = None, jobId: Int, name: String, email: String)
 
 }
