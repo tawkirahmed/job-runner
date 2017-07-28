@@ -13,6 +13,8 @@
 
 3. Now the application UI can be accessible from: **http://localhost:9000/**.
 
+4. For browsing the code, intellij idea is a good option.
+
 
 ###### Application configurations:
 
