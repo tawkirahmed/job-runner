@@ -51,5 +51,15 @@ That is test case 3 will validate both test case 1 and 2.
   
 ###### Improvements:
 
-  1. Limit auto retry of failed job, but allow force run of a failed job
+  1. Introduce threads (scala actors) to run independent set of jobs parallely.
+
+  2. While identifying job execution order, handle following case more elegantly.
+    Suppose Job-1 and Job-2 has no dependency and then Job-3 depends on both Job-1 and Job-2. Now say, the scheduling has been determined in this order:
+    Job-1 -> Job-2 -> Job-3. If for some reason Job-1 fails, we should execute Job-2 as it is not dependant on any other job. But this case has not been handled in the implementation.
+    
+  3. Add support for setting job running time from UI.
+  
+  4. Add support for setting multiple scripts and watchers from the UI.
+  
+  5. 
   

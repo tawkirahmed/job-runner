@@ -15,15 +15,27 @@ class DFS @Inject()() {
   // 1 means visit start, 2 means end.
   private var sortOrder = scala.collection.mutable.ListBuffer.empty[Int]
 
+  /**
+    * This methods find independent sub graphs first. Then on those sub-graphs topological sorting is done.
+    * @param startNodeList
+    * @param edgeList
+    * @return
+    */
   def getTopSortWithIndependentNodes(startNodeList: Seq[Int], edgeList: List[(Int, Int)]): Seq[Seq[Int]] = {
 
-    val unDirectedEdgeMap = getUndirectedEdgeMap(edgeList)
+    val unDirectedEdgeMap = getUndirectedEdgeMap(edgeList) // Making the dependency relation un directed. So that we can use flood fill to identify all the related sub graphs.
     val subGroups = getRelatedNodes(startNodeList, unDirectedEdgeMap)
 
     val directedEdgeMap = edgeList.groupBy(_._1).map(x => x._1 -> x._2.map(_._2))
     for (subGroup <- subGroups) yield getTopSort(subGroup, collection.mutable.Map(directedEdgeMap.toSeq: _*))
   }
 
+  /**
+    * This is a classic topological sort
+    * @param startNodeList
+    * @param edgeMap
+    * @return
+    */
   private def getTopSort(startNodeList: Seq[Int], edgeMap: MutableMap[Int, List[Int]]): Seq[Int] = {
     initFlags()
 
@@ -92,4 +104,3 @@ class DFS @Inject()() {
 
   private def getFlag(node: Int): Int = if (!this.visitFlag.contains(node)) 0 else this.visitFlag(node)
 }
-
