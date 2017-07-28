@@ -21,6 +21,9 @@ class ScheduledTasks @Inject()(
 
   val delay = getDelay
 
+  /**
+    * Run the job manager in a scheduled process. So the run method will be invoked at a particular interval
+    */
   if (cfg.getBoolean("app.schedule.enabled")) {
     actorSystem.scheduler.schedule(initialDelay = Duration(1, TimeUnit.SECONDS), interval = delay) {
       jobService.run

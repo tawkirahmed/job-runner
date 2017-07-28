@@ -22,59 +22,73 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  initAllTables() // TODO: Remove, this should be taken care of by deployement script
+  initAllTables() // TODO: Remove, this should be taken care of by the deployment script
 
+  /**
+    * This is the most straight forward query, we finding a job based on its id.
+    *
+    * @param id
+    * @return
+    */
   def find(id: Int): Future[Job] = db.run((for (job <- jobs if job.id === id) yield job).result.head)
 
+  /**
+    * Find all jobs, this has several. Specially when user pick dependecy.
+    *
+    * @return
+    */
   def findAll(): Future[Seq[Job]] = {
     db.run((for (job <- jobs) yield job).result)
   }
 
-  def getExecutables: Seq[Executable] = {
-    ???
-  }
-
+  /**
+    * The dependency table holds two columns which maintain the relation between the dependant job
+    * jobId denotes the job which must be completed first
+    * dependantJobId is the job which will be eligable to run after the Job with jobId is completed.
+    * We consider a dependency exists if
+    *   1. There is dependency relation defined by user AND
+    *   2. The parent job (with the jobId) is not completed OR the parent job has never run OR the parent job has previously run but not today
+    * @param executionStartTime
+    * @return
+    */
   def getJobDependencies(executionStartTime: ZonedDateTime): Future[Seq[(Int, Int)]] = {
-    // TODO: Need to add completed depency
-    val date = new Date(executionStartTime.toInstant().getEpochSecond * 1000l)
+    val date = new Date(executionStartTime.toInstant().getEpochSecond * 1000l) // converting current time to java.sql.date
     db.run((for {
       edge <- jobDependencies
       job <- jobs if (job.id === edge.jobId && (job.status =!= 3 || !job.lastRunDate.isDefined || job.lastRunDate < date))
     } yield edge.jobId -> edge.dependantJobId).result)
   }
 
+  /**
+    * This method finds the root jobs which have no dependency, those will work as a starting point.
+    * Possible candidates have following properties:
+    *   1. They have no dependency and they are scheduled to run today
+    *   2. OR they failed in the last try TODAY, that means all their dependency has already been completed for today.
+    * @param executionStartTime
+    * @return
+    */
   def getStartingJobs(executionStartTime: ZonedDateTime): Future[Seq[Job]] = {
     val date = new Date(executionStartTime.toInstant().getEpochSecond * 1000l)
     db.run {
       (for {
         (job, dependency) <- jobs joinLeft jobDependencies on (_.id === _.dependantJobId)
         if (
-          (!dependency.isDefined && (!job.runTime.isDefined || true) && (!job.lastRunDate.isDefined || job.lastRunDate < date))
+          (!dependency.isDefined && !job.runTime.isDefined &&
+            (!job.lastRunDate.isDefined || job.lastRunDate < date))
             || (job.status === 4 && job.lastRunDate === date))
       } yield job).result
     }
   }
 
-  def getJobDetails(jobIds: Seq[Int]): Future[Seq[(Job, Executable, Option[JobWatcher])]] = {
+  /**
+    * This method finds all details of a set of Jobs which will be used during running the job
+    * @param jobIds
+    * @return
+    */
+  def getJobDetails(jobIds: Seq[Int]): Future[Seq[(Job, Executable, Option[JobWatcher], Option[Job])]] = {
     val q1 =
       for {
-        job <- jobs if job.id.inSetBind(jobIds)
-        executable <- executables if executable.jobId === job.id
-      } yield (job, executable)
-
-    val q2 = for {
-      (jobWithExecutable, watcher) <- q1 joinLeft jobWatchers on (_._1.id === _.jobId)
-    } yield (jobWithExecutable._1, jobWithExecutable._2, watcher)
-
-    db.run {
-      q2.result
-    }
-  }
-
-  def getJobDetails(jobId: Int): Future[Seq[(Job, Executable, Option[JobWatcher], Option[Job])]] = {
-    val q1 =
-      for {
-        job <- jobs if job.id === jobId
+        job <- jobs  if job.id.inSetBind(jobIds)
         executable <- executables if executable.jobId === job.id
       } yield (job, executable)
 
@@ -95,9 +109,10 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
     }
   }
 
-  /*
-  CRUD Operation API
-   */
+  /**
+    * The following methods are the CRUD apis
+    **/
+
   def insertJob(job: Job): Future[Job] = db
     .run(jobs returning jobs.map(_.id) += job)
     .map(id => job.copy(id = Some(id)))
@@ -132,8 +147,6 @@ class JobsRepository @Inject()(protected val dbConfigProvider: DatabaseConfigPro
   def updateExecutable(ex: Executable): Future[Int] = db.run(executables.filter(_.id === ex.id).update(ex))
 
   def initAllTables(): Future[Unit] = {
-    // TODO: https://stackoverflow.com/questions/33929709/scala-slick-how-to-create-schema-only-if-it-does-not-exist
-
     db.run(DBIOAction.seq(jobs.schema.create))
     db.run(DBIOAction.seq(executables.schema.create))
     db.run(DBIOAction.seq(jobDependencies.schema.create))

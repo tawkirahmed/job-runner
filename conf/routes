@@ -12,7 +12,7 @@ POST        /jobs/run/:jobId           controllers.JobsController.run(jobId: Int
 POST        /jobs/run-all              controllers.JobsController.runAll
 
 #for test purposes
-POST        /jobs/clear/:jobId           controllers.JobsController.clearLastRun(jobId: Int)
-POST        /jobs/clear-all              controllers.JobsController.clearLastRunAll
+POST        /jobs/clear/:jobId         controllers.JobsController.clearLastRun(jobId: Int)
+POST        /jobs/clear-all            controllers.JobsController.clearLastRunAll
 
 GET         /assets/*file              controllers.Assets.versioned(path="/public", file: Asset)

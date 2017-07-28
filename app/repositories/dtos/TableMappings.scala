@@ -9,6 +9,11 @@ import slick.jdbc.JdbcProfile
 /**
   * Created by Tawkir Ahmed Fakir on 7/22/2017.
   */
+
+
+/**
+  * This trait holds the mapping of database table to the dtos. Also table constraints are defined here too.
+  */
 trait TableMappings extends HasDatabaseConfigProvider[JdbcProfile] {
 
   import dbConfig.profile.api._
@@ -74,8 +79,6 @@ trait TableMappings extends HasDatabaseConfigProvider[JdbcProfile] {
 
     def dependantJobId = column[Int]("DEPENDANT_JOB_ID")
 
-    // TODO: Check foregin key action constraint
-    // ForeignKey
     def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
 
     def dJobFk = foreignKey("D_JOB_FK", dependantJobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
@@ -94,8 +97,6 @@ trait TableMappings extends HasDatabaseConfigProvider[JdbcProfile] {
 
     def status = column[Int]("STATUS")
 
-    // TODO: Check foregin key action constraint
-    // ForeignKey
     def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
 
     def executableFk = foreignKey("EXECUTABLE_FK", executableId, executables)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
@@ -114,8 +115,6 @@ trait TableMappings extends HasDatabaseConfigProvider[JdbcProfile] {
 
     def email = column[String]("EMAIL", O.Length(512))
 
-    // TODO: Check foregin key action constraint
-    // ForeignKey
     def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
 
     def * = (id.?, jobId, name, email) <> (JobWatcher.tupled, JobWatcher.unapply)

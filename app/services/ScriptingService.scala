@@ -10,6 +10,11 @@ import scala.sys.process.{ProcessLogger, _}
 class ScriptingService @Inject()() {
   private val charSet = "UTF-8"
 
+  /**
+    * Execute shell script, also shows the line at which the script fails
+    * @param cmd
+    * @return
+    */
   def run(cmd: String): Long = {
 
     val commands = cmd.split(System.lineSeparator)
@@ -22,7 +27,7 @@ class ScriptingService @Inject()() {
         throw new Exception(message)
       }
 
-      // TODO: The output might be very long, better redirect to file and get the size from there
+      // TODO: The output might be very long, it will best to redirect them in file and get the size from there
       size + (cmdStatus.stdout.toString.getBytes(charSet)).length
     })
   }
@@ -35,7 +40,7 @@ class ScriptingService @Inject()() {
     val os = sys.props("os.name").toLowerCase
 
     val osTransformedCommand: Seq[String] = (os match {
-      case x if x contains "windows" => Seq("cmd", "/C")
+      case x if x contains "windows" => Seq("cmd", "/C") // Windows behave slightly different than linux os.
       case _ => Nil
     }) :+ command
 

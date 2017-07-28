@@ -6,8 +6,10 @@
         <thead>
             <tr>
                 <td>Job Name</td>
-                <td>Status</td>
                 <td>Last Run Date</td>
+                <td>Minimum data output size</td>
+                <td>Maximum  data output size</td>
+                <td>Expected duration</td>
             </tr>
         </thead>
         <tbody>
@@ -15,13 +17,15 @@
             <tr>
                 <td><a href="@controllers.routes.JobsController.find(job.id.get)">@job.name</a>
                 </td>
-                <td>@job.status</td>
                 <td>@job.lastRunTime</td>
+                <td>@job.minimumDataOutputSize</td>
+                <td>@job.maximumDataOutputSize</td>
+                <td>@job.expectedDuration</td>
             </tr>
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="3">
+                <td colspan="5">
                     <form method="GET" action="@controllers.routes.JobsController.index">
                         <input type="submit" value="View All"/>
                         <br/>
