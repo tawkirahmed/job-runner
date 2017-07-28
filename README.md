@@ -1,6 +1,20 @@
 # job-runner
 
-Details to be added
+###### Installation instructions:
+
+1. Run the sql file: **release/scripts/init.sql**. This will create the database and necessary tables.
+1. To populate data, run the sql: **release/scripts/data_gen.sql**.
+1. Unzip the file: **release/job_runner-1.0.zip**. Please make sure that java 8 runtime is installed in the machine.
+2. Then run the script in the **bin** directory of the extracted files. Script location is **bin/job_runner**.
+    1. For Unix users, zip files do not retain Unix file permissions so when the file is expanded the start script will be required to be set as an executable: $ chmod +x /path/to/bin/<project-name>
+3. Now the application UI can be accessible from: **http://localhost:9000/**.
+
+###### Application configurations:
+1. The application config file resides in: **release/job_runner-1.0/conf/application.conf**
+2. **app.schedule.enabled** setting this value to **true** will trigger the job runner at a configured interval.
+ 3. **app.schedule.interval** this value determines the interval. The possible values can be seen in the comment of the conf file.
+ 4. To configure the database these configurations need to be updated: **slick.dbs.default.db**. The correct mysql database name, user name and password need to be provided here.
+ 5. Similarly for email credentials, **play.mailer** settings need to be updated.
 
 ###### Assumptions
 Following assumptions has been taken while developing the application:
@@ -61,5 +75,4 @@ That is test case 3 will validate both test case 1 and 2.
   
   4. Add support for setting multiple scripts and watchers from the UI.
   
-  5. 
   

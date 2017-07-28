@@ -62,7 +62,7 @@ trait TableMappings extends HasDatabaseConfigProvider[JdbcProfile] {
 
     def jobId = column[Int]("JOB_ID")
 
-    def script = column[String]("JOB_NAME", O.Length(Int.MaxValue))
+    def script = column[String]("SCRIPT", O.Length(Int.MaxValue))
 
     // ForeignKey
     def jobFk = foreignKey("JOB_FK", jobId, jobs)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
